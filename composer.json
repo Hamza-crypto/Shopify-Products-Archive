@@ -1,0 +1,12 @@
+{
+    "require": {
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mysqli": "*",
+        "vlucas/phpdotenv": "^5.4",
+        "monolog/monolog": "^2.5"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^5.4"
+    }
+}

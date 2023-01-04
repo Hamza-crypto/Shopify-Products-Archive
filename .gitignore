@@ -1,0 +1,7 @@
+.idea/
+store/.env
+store_*/.env
+api/.env
+*.env
+vendor
+src/logs/app.log
