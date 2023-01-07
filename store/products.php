@@ -3,8 +3,28 @@
 require_once __DIR__ . '/includes/init.php';
 global $log;
 
-$shop = $_ENV['SHOPIFY_SHOP_SLUG'];
-$token = $_ENV['SHOPIFY_ACCESS_TOKEN'];
+if(isset($_POST['shop'])){
+    $shop = $_POST['shop'];
+
+    if($shop == 'Select'){
+        echo 'Please select a shop';
+        exit;
+    }
+    if($shop == 'shop1'){
+        $shop = $_ENV['SHOPIFY_SHOP_SLUG_1'];
+        $token = $_ENV['SHOPIFY_ACCESS_TOKEN_1'];
+    }
+    elseif($shop == 'shop2'){
+        $shop = $_ENV['SHOPIFY_SHOP_SLUG_2'];
+        $token = $_ENV['SHOPIFY_ACCESS_TOKEN_2'];
+    }
+}
+
+
+
+
+
+//dd($shop, $token);
 $key = 'barcode';
 
 $log->info('orders:start');
@@ -27,7 +47,7 @@ if (isset($_GET['page_info'])) {
 
 
 $upc = [];
-//check multiple variables inside isset
+
 if (isset($_POST['submit'])) {
     $handle = fopen($_FILES['file']['tmp_name'], "r");
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -84,7 +104,6 @@ function parse_api_response()
 
         foreach ($products['products'] as $product) {
             if (isset($_POST['no_img'])) {
-                dump('no_img');
                 if (count($product['images']) < 1) {
                     shopify_call(
                         $token,
@@ -100,7 +119,6 @@ function parse_api_response()
                 foreach ($product['variants'] as $variant) {
 
                     if (isset($_POST['no_sku']) || isset($_POST['no_upc'])) {
-                        dump('no_sku, no upc');
                         if (!isset($variant[$key])) {
                             // Delete this product
                             echo sprintf('Product ID: %s Deleted</br>', $product['id']);
@@ -115,7 +133,6 @@ function parse_api_response()
                     }
 
                     if (isset($variant[$key]) && in_array($variant[$key], $upc)) {
-                        dump('in_array');
                         //Make this product archive
                         shopify_call(
                             $token,
@@ -172,7 +189,7 @@ function parse_api_response()
 
         $i++;
 
-        if ($i == 40) {
+        if ($i == 2) {
             echo "Breaking the loop, You can continue from next page by changing the page_info";
             dump(sprintf('Total pagination: %s', $i));
             dump($matches[0][1]);
@@ -237,6 +254,14 @@ function parse_api_response()
             <input type="submit" class="btn btn-warning flex-right" value="Delete products" name="no_img">
         </div>
     </form>
+    <div class="form-group col-md-4">
+        <label for="shop">Select Shop</label>
+        <select id="shop" class="form-control">
+            <option selected>Select</option>
+            <option value="shop1">Home Sweet Joy</option>
+            <option value="shop2">Your Samour</option>
+        </select>
+    </div>
 </div>
 
 <!-- Optional JavaScript -->
@@ -250,5 +275,16 @@ function parse_api_response()
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+
+<script>
+    $(document).ready(function () {
+        //when any form on the page is submitted, first grab the value of the selected option
+        $('form').submit(function () {
+            var shop = $('#shop').val();
+            //then add a hidden input to the form with the name of the shop
+            $(this).append('<input type="hidden" name="shop" value="' + shop + '" />');
+        });
+    });
+</script>
 </body>
 </html>
